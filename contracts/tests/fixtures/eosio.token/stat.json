@@ -1,0 +1,16 @@
+{
+  "EOSDT": [
+    {
+      "supply": "1000.123456789 EOSDT",
+      "max_supply": "100000.123456789 EOSDT",
+      "issuer": "eosibc"
+    }
+  ],
+  "WEOSDT": [
+    {
+      "supply": "1000.123456789 WEOSDT",
+      "max_supply": "100000.123456789 WEOSDT",
+      "issuer": "waxibc"
+    }
+  ]
+}

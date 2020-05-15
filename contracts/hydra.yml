@@ -1,0 +1,8 @@
+contracts:
+  reporteribc:
+    abi: reporteribc/build/reporteribc.abi
+    name: reporteribc
+    wasm: reporteribc/build/reporteribc.wasm
+options:
+  skipAuth: true
+  serverBaseUrl: 'http://127.0.0.1:8889'
