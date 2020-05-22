@@ -21,7 +21,7 @@ async function action() {
     const SYMBOL_CODE = thisChain === `wax` ? `WEOSDT` : `EOSDT`;
 
     let { USER_1: X_CHAIN_USER } = getAccountNames(envName === `kylin` ? `waxtest` : `kylin`)
-    X_CHAIN_USER = `me.no.exists`
+    // X_CHAIN_USER = `me.no.exists`
 
     const data = {
       from: USER_1,

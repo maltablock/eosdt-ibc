@@ -25,6 +25,7 @@ async function action() {
         data: {
           threshold: 1,
           fees_percentage: 0.1,
+          expire_after_seconds: 86400 * 7,
         },
       },
     ]);

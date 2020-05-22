@@ -31,12 +31,13 @@ ACTION reporteribc::init(name current_chain_name, token_info token_info,
       get_self());
 }
 
-ACTION reporteribc::update(uint64_t threshold, double fees_percentage) {
+ACTION reporteribc::update(uint64_t threshold, double fees_percentage, uint32_t expire_after_seconds) {
   require_auth(get_self());
 
   check(threshold > 0, "minimum reporters must be positive");
 
   _settings.threshold = threshold;
+  _settings.expire_after = seconds(expire_after_seconds);
   _settings_table.set(_settings, get_self());
 
   _fees.fees_percentage = fees_percentage;

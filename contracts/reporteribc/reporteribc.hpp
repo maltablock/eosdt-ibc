@@ -114,7 +114,7 @@ CONTRACT reporteribc : public contract {
 
   ACTION init(name current_chain_name, token_info token_info,
               uint32_t expire_after_seconds, bool do_issue, uint8_t threshold, double fees_percentage);
-  ACTION update(uint64_t threshold, double fees_percentage);
+  ACTION update(uint64_t threshold, double fees_percentage, uint32_t expire_after_seconds);
   ACTION enable(bool enable);
   ACTION addreporter(name reporter);
   ACTION rmreporter(name reporter);
