@@ -55,11 +55,11 @@ export type TTransfersRow = {
   expires_at: string; // "2020-05-21T11:29:56";
   is_refund: number; // 0;
 };
-export type TTransfersRowTransformed = Omit<TTransfersRow, "id" | "is_refund" | "transaction_time" | "expires_at"> & {
+export type TTransfersRowTransformed = Omit<TTransfersRow, "id" | "is_refund"> & {
   id: number;
   is_refund: boolean;
-  transaction_time: Date;
-  expires_at: Date;
+  transactionDate: Date;
+  expiresAtDate: Date;
 };
 
 export type TReportsRow = {

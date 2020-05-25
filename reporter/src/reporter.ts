@@ -73,8 +73,13 @@ export default class Reporter {
       ...t,
       id: Number.parseInt(`${t.id}`, 10),
       is_refund: Boolean(t.is_refund),
-      transaction_time: new Date(`${t.transaction_time}Z`),
-      expires_at: new Date(`${t.expires_at}Z`),
+      // do not overwrite original transaction_time and expires_at
+      // if a Date object is serialized back using eosjs, it will _not_ equal
+      // the original strings because of time zones
+      // new Date(Date.parse(a + 'Z')) https://github.com/EOSIO/eosjs/blob/master/src/eosjs-serialize.ts#L540
+      // they should do: new Date(Date.parse(a.toISOString()))
+      transactionDate: new Date(`${t.transaction_time}Z`),
+      expiresAtDate: new Date(`${t.expires_at}Z`),
     }));
   }
 
@@ -106,14 +111,22 @@ export default class Reporter {
 
   private async reportTransfers() {
     const unreportedTransfers = this.transfers.filter((t) => {
-      const isExpired = Date.now() > t.expires_at.getTime();
+      const isExpired = Date.now() > t.expiresAtDate.getTime();
       if (isExpired) return false;
 
+      if (!isNetworkName(t.to_blockchain))
+      throw new Error(
+        `Unknwon blockchain in transfer with id ${t.id}: ${t.to_blockchain}`
+      );
+      const xcontracts = getContractsForNetwork(t.to_blockchain);
+
       const alreadyReported = this.reports.some(
-        (r) =>
-          r.transfer.id === t.id &&
+        (r) => {
+          return r.transfer.id === t.id &&
           r.transfer.from_blockchain === t.from_blockchain &&
-          r.transfer.transaction_id === t.transaction_id
+          r.transfer.transaction_id === t.transaction_id &&
+          r.confirmed_by.includes(xcontracts.reporterAccount)
+        }
       );
 
       return !alreadyReported;

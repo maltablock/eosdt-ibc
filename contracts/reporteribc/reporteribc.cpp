@@ -146,14 +146,14 @@ ACTION reporteribc::report(name reporter, const transfer_s &transfer) {
   // it will fail at execute and then initiate a refund
   // check(is_account(transfer.to_account), "to account does not exist");
 
-  uint128_t report_id = report_s::_by_transfer_id(transfer);
+  uint128_t transfer_id = report_s::_by_transfer_id(transfer);
   auto reports_by_transfer = _reports_table.get_index<"bytransferid"_n>();
-  auto report = reports_by_transfer.find(report_id);
-  bool new_report = report == reports_by_transfer.end();
+  auto report = reports_by_transfer.lower_bound(transfer_id);
+  bool new_report = report == reports_by_transfer.upper_bound(transfer_id);
   if (!new_report) {
     new_report = true;
     // check and find report with same transfer data
-    while (report != reports_by_transfer.upper_bound(report_id)) {
+    while (report != reports_by_transfer.upper_bound(transfer_id)) {
       if (report->transfer == transfer) {
         new_report = false;
         break;
