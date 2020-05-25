@@ -13,11 +13,13 @@ export const getEnvConfig = () => {
         `Missing environment variable '${VAR_NAME}' for chain ${networkName}`
       );
 
-    const [acc, permission, key] = val.split(`;`).map((x) => x.trim());
+    const [acc, permission, key, cpuPayer, cpuKey] = val.split(`;`).map((x) => x.trim());
     return {
       reporterAccount: acc,
       reporterPermission: permission,
       reporterKey: key,
+      cpuPayer,
+      cpuKey,
     };
   };
 
@@ -32,6 +34,8 @@ export const getEnvConfig = () => {
       reporterAccount: string;
       reporterPermission: string;
       reporterKey: string;
+      cpuPayer?: string;
+      cpuKey?: string;
     };
   };
 };

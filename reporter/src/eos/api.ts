@@ -20,7 +20,8 @@ export const getApi: (networkName: string) => Api = (() => {
 
       const signatureProvider = new JsSignatureProvider([
         envConfig[_networkName].reporterKey,
-      ]);
+        envConfig[_networkName].cpuKey,
+      ].filter(Boolean));
       apis[_networkName] = new Api({
         rpc: getRpc(networkName),
         signatureProvider,

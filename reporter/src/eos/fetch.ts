@@ -4,6 +4,8 @@ import { getApi } from "./api";
 import { getContractsForNetwork, getRpc } from "./networks";
 import { logger } from "../logger";
 import { TTransactionResult } from "./types";
+import { getEnvConfig } from "../dotenv";
+import { unmapNetworkName } from "../utils";
 
 // https://github.com/EOSIO/eosjs-api/blob/master/docs/api.md#eos.getTableRows
 type GetTableRowsOptions = {
@@ -134,14 +136,14 @@ export const sendTransaction = (network: NetworkName) => async (
   };
   const eosApi = getApi(network);
 
-  const contracts = getContractsForNetwork(network);
-  if (contracts.cpuPayer) {
+  const config = getEnvConfig()[unmapNetworkName(network)]
+  if (config.cpuPayer) {
     _actions.unshift({
-      account: contracts.cpuPayer,
+      account: config.cpuPayer,
       name: `payforcpu`,
       authorization: [
         {
-          actor: contracts.cpuPayer,
+          actor: config.cpuPayer,
           permission: `payforcpu`,
         },
       ],

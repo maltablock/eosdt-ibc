@@ -27,6 +27,15 @@ npm start
 
 See the Docker image for a dockerized deployment.
 
+#### Different CPU payer
+
+One can specify a different CPU payer for the actions run by the reporters.
+
+```bash
+# append cpu-account;cpu-key to the existing reporter;permission;key
+EOS_IBC=maltareports;active;5JzSdC...;cpupayer;5k...
+```
+
 ## Monitoring
 
 There are some optional endpoints that can be used to check the health of the reporter, or a list of logs and performed transfer events.
