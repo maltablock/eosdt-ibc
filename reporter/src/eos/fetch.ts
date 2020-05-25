@@ -119,6 +119,7 @@ export const fetchHeadBlockNumbers = (
   const rpc = getRpc(network);
   const response = await rpc.get_info();
   return {
+    headBlockTime: response.head_block_time,
     headBlockNumber: response.head_block_num,
     lastIrreversibleBlockNumber: response.last_irreversible_block_num,
   };

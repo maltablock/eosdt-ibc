@@ -21,6 +21,7 @@ It can be deployed on servers like any other NodeJS app.
 It's stateless and does not require any database.
 
 ```bash
+npm install
 npm run build
 npm start
 ```

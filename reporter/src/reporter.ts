@@ -19,6 +19,7 @@ import {
   pickRandom,
   sleep,
 } from "./utils";
+import { pulse } from "./utils/health";
 
 export default class Reporter {
   network: NetworkName;
@@ -26,6 +27,7 @@ export default class Reporter {
   transferIrreversibilityMap: { [key: string]: number } = {};
   reports: TReportsRowTransformed[] = [];
   currentHeadBlock = Infinity;
+  currentHeadTime = new Date().toISOString();
   currentIrreversibleHeadBlock = Infinity;
 
   constructor(networkName: NetworkName) {
@@ -47,7 +49,10 @@ export default class Reporter {
           this.fetchXReports(),
           this.fetchHeadBlockNumbers(),
         ]);
+
         this.printState();
+        pulse(this.network, this.currentHeadBlock, this.currentHeadTime)
+
         await this.reportTransfers();
         await this.executeReports();
       } catch (error) {
@@ -103,10 +108,12 @@ export default class Reporter {
   async fetchHeadBlockNumbers() {
     const {
       headBlockNumber,
+      headBlockTime,
       lastIrreversibleBlockNumber,
     } = await fetchHeadBlockNumbers(this.network)();
     this.currentHeadBlock = headBlockNumber;
     this.currentIrreversibleHeadBlock = lastIrreversibleBlockNumber;
+    this.currentHeadTime = headBlockTime;
   }
 
   private async reportTransfers() {
