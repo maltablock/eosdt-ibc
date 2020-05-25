@@ -4,6 +4,7 @@ import path from 'path';
 import { createLogger, format, transports } from "winston";
 import { inspect } from "util"
 import { isProduction } from "../utils";
+import 'winston-daily-rotate-file'
 
 function isPrimitive(val) {
   return val === null || (typeof val !== "object" && typeof val !== "function");
@@ -17,6 +18,13 @@ function formatWithInspect(val) {
   );
 }
 
+const rotateFileTransport = new (transports.DailyRotateFile)({
+  filename: '%DATE%.log',
+  dirname: `logs`,
+  datePattern: 'yyyy-MM-DD',
+  utc: true,
+  maxFiles: 14,
+});
 const fileName = `${dateFormat(new Date(), `yyyy-MM-dd`)}.log`;
 // CHANGEME: depending on where you want to log on production
 const logFilePath = `logs/${fileName}`;
@@ -39,10 +47,11 @@ const logger = createLogger({
     new transports.Console({
       level: isProduction() ? `info` : `silly`
     }),
-    new transports.File({
-      filename: logFilePath,
-      level: "silly"
-    }), 
+    // new transports.File({
+    //   filename: logFilePath,
+    //   level: "silly"
+    // }),
+    rotateFileTransport,
   ]
 });
 

@@ -9,9 +9,7 @@ export const getEnvConfig = () => {
     const VAR_NAME = `${networkName.toUpperCase()}_IBC`;
     const val = process.env[VAR_NAME];
     if (!val)
-      throw new Error(
-        `Missing environment variable '${VAR_NAME}' for chain ${networkName}`
-      );
+      return;
 
     const [acc, permission, key, cpuPayer, cpuKey] = val.split(`;`).map((x) => x.trim());
     return {
