@@ -62,6 +62,7 @@ ACTION reporteribc::enable(bool enable) {
 
 ACTION reporteribc::addreporter(name reporter) {
   require_auth(get_self());
+  check(is_account(reporter), "reporter account does not exist");
   auto it = _reporters_table.find(reporter.value);
 
   check(it == _reporters_table.end(), "reporter already defined");
