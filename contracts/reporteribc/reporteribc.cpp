@@ -114,15 +114,18 @@ ACTION reporteribc::issuefees() {
     double share = (double)reporter->points / total_points;
     asset share_fees = asset(share * reserve.amount, reserve.symbol);
 
-    token::transfer_action transfer_act(_settings.token_info.contract,
-                                        {get_self(), name("active")});
-    transfer_act.send(get_self(), reporter->account, share_fees, "fees");
     distributed += share_fees;
 
     _reporters_table.modify(reporter, eosio::same_payer, [&](auto &s) {
       // reset points
       s.points = 0;
     });
+
+    if(share_fees.amount > 0) {
+      token::transfer_action transfer_act(_settings.token_info.contract,
+                                          {get_self(), name("active")});
+      transfer_act.send(get_self(), reporter->account, share_fees, "fees");
+    }
   }
 
   // should be close to 0, roll over dust
