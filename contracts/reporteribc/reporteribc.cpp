@@ -95,8 +95,6 @@ ACTION reporteribc::clear(uint64_t count) {
 
 ACTION reporteribc::issuefees() {
   // can be called by anyone
-  check(_fees.last_distribution + days(30) < current_time_point(),
-        "must wait 30 days before distributing fees again");
 
   uint64_t total_points = 0;
   asset reserve = _fees.reserve;
@@ -107,7 +105,10 @@ ACTION reporteribc::issuefees() {
     total_points += reporter->points;
   }
 
-  if (total_points == 0) return;
+  // wait until ~10 transfers have been processed
+  // 1 transfer needs at least threshold reports + 1 execute
+  check(total_points > (_settings.threshold + 1) * 10,
+        "not enough transfers have been processed since last time");
 
   for (auto reporter = _reporters_table.begin();
        reporter != _reporters_table.end(); reporter++) {
@@ -239,7 +240,8 @@ ACTION reporteribc::execfailed(name reporter, uint64_t report_id) {
         "report already marked as failed by reporter");
 
   bool failed = false;
-  _reports_table.modify(report, eosio::same_payer, [&](auto &s) {
+  // push_back increases RAM, use reporter as RAM payer
+  _reports_table.modify(report, reporter, [&](auto &s) {
     s.failed_by.push_back(reporter);
     s.failed = failed = s.failed_by.size() >= _settings.threshold;
   });
