@@ -2,9 +2,24 @@
 
 Nodejs app running on a server that scans all blockchans for events and handles IBC.
 
-## Deplyoment
+## Setup
 
-The reporter requires environment variables to be set:
+- Can be deployed on servers like any other NodeJS app.
+- It's stateless and does not require any database.
+- Requries Node.js
+
+```bash
+npm install
+npm run build
+# for production
+npm start
+
+# for testnets
+npm run start-dev
+```
+
+The reporter requires environment variables to be set.
+See `.template.env` - this file can be copied to `.env` and configured with the correct accounts and permissions.
 
 ```bash
 # account name on EOS; permission used for reporting; private key for permission
@@ -16,15 +31,9 @@ WAX_ENDPOINT=https://chain.wax.io:443
 WAX_IBC=maltareports;active;5JzSdC...
 ```
 
+#### Setup using Docker
 
-It can be deployed on servers like any other NodeJS app.
-It's stateless and does not require any database.
-
-```bash
-npm install
-npm run build
-npm start
-```
+- [ ] Finish docker image and upload it.
 
 See the Docker image for a dockerized deployment.
 

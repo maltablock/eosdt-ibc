@@ -25,9 +25,13 @@ const rotateFileTransport = new (transports.DailyRotateFile)({
   utc: true,
   maxFiles: 14,
 });
-const fileName = `${dateFormat(new Date(), `yyyy-MM-dd`)}.log`;
-// CHANGEME: depending on where you want to log on production
-const logFilePath = `logs/${fileName}`;
+
+let logFilePath = ``;
+rotateFileTransport.on('new', function(newFilename) {
+  logFilePath = newFilename;
+  logger.info(`Logfile path: ${path.resolve(logFilePath)}`)
+});
+const getLogFilePath = () => logFilePath
 
 const logger = createLogger({
   level: "info",
@@ -56,6 +60,5 @@ const logger = createLogger({
 });
 
 logger.info(`is_production = ${isProduction()}`)
-logger.info(`Logfile path: ${path.resolve(logFilePath)}`)
 
-export { logger, logFilePath };
+export { logger, getLogFilePath };
