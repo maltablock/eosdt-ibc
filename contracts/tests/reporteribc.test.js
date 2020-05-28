@@ -61,6 +61,7 @@ describe("reporteribc", () => {
       do_issue: false,
       threshold: 2,
       fees_percentage: 0.1,
+      min_quantity: `1.133700000 EOSDT`,
     });
     await waxIbc.contract.init({
       current_chain_name: `wax`,
@@ -72,6 +73,7 @@ describe("reporteribc", () => {
       do_issue: true,
       threshold: 2,
       fees_percentage: 0.1,
+      min_quantity: `1.133700000 WEOSDT`,
     });
     for (const reporter of reporters) {
       await eosIbc.contract.addreporter({
@@ -102,6 +104,7 @@ describe("reporteribc", () => {
           contract: "eosdt",
           symbol: "9,EOSDT",
         },
+        min_quantity: `1.133700000 EOSDT`
       },
     ]);
     expect(eosIbc.getTableRowsScoped(`fees`)[eosIbc.accountName]).toEqual([

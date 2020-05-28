@@ -3,13 +3,15 @@
 
 ACTION reporteribc::init(name current_chain_name, token_info token_info,
                          uint32_t expire_after_seconds, bool do_issue,
-                         uint8_t threshold, double fees_percentage) {
+                         uint8_t threshold, double fees_percentage, const asset& min_quantity) {
   require_auth(get_self());
 
   bool settings_exists = _settings_table.exists();
 
   check(!settings_exists, "settings already defined");
   check(threshold > 0, "threshold must be positive");
+  check(min_quantity.amount >= 0, "min_quantity must be >= 0");
+  check(token_info.symbol == min_quantity.symbol, "token info symbol does not match min_quantity symbol");
 
   _settings_table.set(
       settings{
@@ -19,6 +21,7 @@ ACTION reporteribc::init(name current_chain_name, token_info token_info,
           .do_issue = do_issue,
           .expire_after = seconds(expire_after_seconds),
           .threshold = threshold,
+          .min_quantity = min_quantity,
       },
       get_self());
   _fees_table.set(
@@ -31,13 +34,16 @@ ACTION reporteribc::init(name current_chain_name, token_info token_info,
       get_self());
 }
 
-ACTION reporteribc::update(uint64_t threshold, double fees_percentage, uint32_t expire_after_seconds) {
+ACTION reporteribc::update(uint64_t threshold, double fees_percentage, uint32_t expire_after_seconds, const asset& min_quantity) {
   require_auth(get_self());
 
   check(threshold > 0, "minimum reporters must be positive");
+  check(min_quantity.amount >= 0, "min_quantity must be >= 0");
+  check(_settings.token_info.symbol == min_quantity.symbol, "token info symbol does not match min_quantity symbol");
 
   _settings.threshold = threshold;
   _settings.expire_after = seconds(expire_after_seconds);
+  _settings.min_quantity = min_quantity;
   _settings_table.set(_settings, get_self());
 
   _fees.fees_percentage = fees_percentage;
@@ -271,12 +277,13 @@ void reporteribc::on_transfer(name from, name to, asset quantity, string memo) {
       from == "eosio.rex"_n)
     return;
 
-  check(to == get_self(), "contract not involved in transfer");
-
   if (get_first_receiver() != _settings.token_info.contract) return;
 
+  check(to == get_self(), "contract not involved in transfer");
   check(quantity.symbol == _settings.token_info.symbol,
         "correct token contract, but wrong symbol");
+  check(quantity >= _settings.min_quantity,
+        "sent quantity is less than required min quantity");
 
   const memo_x_transfer &memo_object = parse_memo(memo);
 

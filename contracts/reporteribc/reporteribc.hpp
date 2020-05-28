@@ -45,6 +45,7 @@ CONTRACT reporteribc : public contract {
     eosio::microseconds expire_after = days(7);
     // how many reporters need to report a transfer for it to be confirmed
     uint8_t threshold;
+    asset min_quantity;
   };
 
   TABLE fees {
@@ -113,8 +114,8 @@ CONTRACT reporteribc : public contract {
   };
 
   ACTION init(name current_chain_name, token_info token_info,
-              uint32_t expire_after_seconds, bool do_issue, uint8_t threshold, double fees_percentage);
-  ACTION update(uint64_t threshold, double fees_percentage, uint32_t expire_after_seconds);
+              uint32_t expire_after_seconds, bool do_issue, uint8_t threshold, double fees_percentage, const asset& min_quantity);
+  ACTION update(uint64_t threshold, double fees_percentage, uint32_t expire_after_seconds, const asset& min_quantity);
   ACTION enable(bool enable);
   ACTION addreporter(name reporter);
   ACTION rmreporter(name reporter);
