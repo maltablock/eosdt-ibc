@@ -39,6 +39,7 @@ async function action() {
           do_issue: thisChain === `wax`,
           threshold: 1,
           fees_percentage: 0.1,
+          min_quantity: `1.000000000 ${SYMBOL_CODE}`,
         },
       },
       {

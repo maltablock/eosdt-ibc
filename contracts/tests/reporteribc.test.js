@@ -200,7 +200,7 @@ describe("reporteribc", () => {
         expect.objectContaining({
           id: "1",
           confirmed: true,
-          confirmed_by: ["reporter2", "reporter3"],
+          confirmed_by: ["reporter2", "reporter3", ""],
           transfer: transferData,
         }),
       ])
@@ -310,7 +310,7 @@ describe("reporteribc", () => {
       id: "2",
       executed: false,
       failed: true,
-      failed_by: reporters.slice(0, 2),
+      failed_by: [...reporters.slice(0, 2), ""],
     });
 
     const refundTransferData = waxIbc

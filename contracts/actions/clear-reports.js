@@ -11,14 +11,11 @@ const {
 
 
 async function action() {
-  const thisChain = envName.includes(`wax`) ? `wax` : `eos`;
-  const SYMBOL_CODE = thisChain === `wax` ? `WEOSDT` : `EOSDT`;
-
   try {
     await sendTransaction([
       {
         account: IBC_CONTRACT,
-        name: `update`,
+        name: `clear.rep`,
         authorization: [
           {
             actor: IBC_CONTRACT,
@@ -26,10 +23,7 @@ async function action() {
           },
         ],
         data: {
-          threshold: 2,
-          fees_percentage: 0.1,
-          expire_after_seconds: 86400 * 3,
-          min_quantity: `1.000000000 ${SYMBOL_CODE}`
+          ids: ["2"]
         },
       },
     ]);
