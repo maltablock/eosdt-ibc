@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <eosio/asset.hpp>
 #include <eosio/crypto.hpp>
 #include <eosio/eosio.hpp>
@@ -119,7 +120,9 @@ CONTRACT reporteribc : public contract {
   ACTION enable(bool enable);
   ACTION addreporter(name reporter);
   ACTION rmreporter(name reporter);
-  ACTION clear(uint64_t count);
+  [[eosio::action("clear.trans")]] void cleartransfers(std::vector<uint64_t> ids);
+  [[eosio::action("clear.rep")]] void  clearreports(std::vector<uint64_t> ids);
+  [[eosio::action("clear.exp")]] void  clearexpired(uint64_t count);
   ACTION issuefees();
   ACTION report(name reporter, const transfer_s &transfer);
   ACTION exec(name reporter, uint64_t report_id);
@@ -213,5 +216,14 @@ CONTRACT reporteribc : public contract {
 
     // make compiler happy
     return name("");
+  }
+
+  uint32_t get_num_reporters() {
+    uint32_t count = 0;
+    for(auto it = _reporters_table.begin(); it != _reporters_table.end(); it++) {
+      count++;
+    }
+
+    return count;
   }
 };

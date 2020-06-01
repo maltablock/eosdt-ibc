@@ -51,7 +51,7 @@ export default class Reporter {
         ]);
 
         this.printState();
-        pulse(this.network, this.currentHeadBlock, this.currentHeadTime)
+        pulse(this.network, this.currentHeadBlock, this.currentHeadTime);
 
         await this.reportTransfers();
         await this.executeReports();
@@ -122,19 +122,19 @@ export default class Reporter {
       if (isExpired) return false;
 
       if (!isNetworkName(t.to_blockchain))
-      throw new Error(
-        `Unknwon blockchain in transfer with id ${t.id}: ${t.to_blockchain}`
-      );
+        throw new Error(
+          `Unknwon blockchain in transfer with id ${t.id}: ${t.to_blockchain}`
+        );
       const xcontracts = getContractsForNetwork(t.to_blockchain);
 
-      const alreadyReported = this.reports.some(
-        (r) => {
-          return r.transfer.id === t.id &&
+      const alreadyReported = this.reports.some((r) => {
+        return (
+          r.transfer.id === t.id &&
           r.transfer.from_blockchain === t.from_blockchain &&
           r.transfer.transaction_id === t.transaction_id &&
           r.confirmed_by.includes(xcontracts.reporterAccount)
-        }
-      );
+        );
+      });
 
       return !alreadyReported;
     });
@@ -275,23 +275,23 @@ export default class Reporter {
         const txInfo = `${t.from_account}@${t.from_blockchain} == ${t.quantity} ==> ${t.to_account}@${t.to_blockchain}`;
         this.log(
           `verbose`,
-          `Saw new transaction ${tId} (${t.transaction_id}) at block ${this.currentHeadBlock}\n${txInfo}`
+          `Saw new transfer ${tId} at block ${this.currentHeadBlock}\n${txInfo}\nWaiting for irreversibility`
         );
+        // saw at headblock, wait until this block becomes irreversible
         this.transferIrreversibilityMap[tId] = this.currentHeadBlock;
       }
     });
-    // TODO: change this to currentIrreversibleHeadBlock > ...
+
     return transfers.filter(
       (t) =>
-        this.currentHeadBlock >
-          this.transferIrreversibilityMap[
-            this.getInternalUniqueTransferId(t)
-          ] || Infinity
+        this.currentIrreversibleHeadBlock >
+        (this.transferIrreversibilityMap[this.getInternalUniqueTransferId(t)] ||
+          Infinity)
     );
   }
 
   private getInternalUniqueTransferId(transfer: TTransfersRowTransformed) {
-    return `${transfer.from_blockchain}|${transfer.id}`;
+    return `${transfer.from_blockchain}|${transfer.id}|${transfer.transaction_id}`;
   }
 
   private get xChainNetwork(): NetworkName {

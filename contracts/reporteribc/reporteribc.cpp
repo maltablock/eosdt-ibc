@@ -52,7 +52,7 @@ ACTION reporteribc::update(uint64_t threshold, double fees_percentage, uint32_t 
   // need to update all unconfirmed reports and check if they are now confirmed
   for (auto report = _reports_table.begin(); report != _reports_table.end();
        report++) {
-    if (!report->confirmed && report->confirmed_by.size() >= threshold) {
+    if (!report->confirmed && count_non_empty(report->confirmed_by) >= threshold) {
       _reports_table.modify(report, eosio::same_payer,
                             [&](auto &s) { s.confirmed = true; });
     }
@@ -88,7 +88,7 @@ ACTION reporteribc::rmreporter(name reporter) {
   _reporters_table.erase(it);
 }
 
-ACTION reporteribc::clear(uint64_t count) {
+void reporteribc::clearexpired(uint64_t count) {
   require_auth(get_self());
 
   auto current_count = 0;
@@ -96,6 +96,28 @@ ACTION reporteribc::clear(uint64_t count) {
   for (auto it = expired_reports_table.begin();
        it != expired_reports_table.end() && current_count < count; current_count++, it++) {
     expired_reports_table.erase(it);
+  }
+}
+
+void reporteribc::cleartransfers(std::vector<uint64_t> ids) {
+  require_auth(get_self());
+
+  for (auto id: ids) {
+    auto it = _transfers_table.find(id);
+    check(it != _transfers_table.end(), "some id does not exist");
+    _transfers_table.erase(it);
+  }
+}
+
+// must make sure to always clear transfers on other chain first
+// otherwise would report twice
+void reporteribc::clearreports(std::vector<uint64_t> ids) {
+  require_auth(get_self());
+
+  for (auto id: ids) {
+    auto it = _reports_table.find(id);
+    check(it != _reports_table.end(), "some id does not exist");
+    _reports_table.erase(it);
   }
 }
 
@@ -175,9 +197,16 @@ ACTION reporteribc::report(name reporter, const transfer_s &transfer) {
   // first reporter
   if (new_report) {
     _reports_table.emplace(reporter, [&](auto &s) {
+      auto reserved_capacity = get_num_reporters();
       s.id = _reports_table.available_primary_key();
       s.transfer = transfer;
-      s.confirmed_by.push_back(reporter);
+      // let first reporter pay for RAM
+      // need to add actual elements because capacity is not serialized
+      // does not work: s.confirmed_by.reserve(reserved_capacity);
+      s.confirmed_by = std::vector<name>(reserved_capacity, eosio::name(""));
+      push_first_free(s.confirmed_by, reporter);
+
+      s.failed_by = std::vector<name>(reserved_capacity, eosio::name(""));
       s.confirmed = 1 >= _settings.threshold;
       s.executed = false;
     });
@@ -187,9 +216,11 @@ ACTION reporteribc::report(name reporter, const transfer_s &transfer) {
                     reporter) == report->confirmed_by.end(),
           "the reporter already reported the transfer");
 
-    reports_by_transfer.modify(report, reporter, [&](auto &s) {
-      s.confirmed_by.push_back(reporter);
-      s.confirmed = s.confirmed_by.size() >= _settings.threshold;
+    // can use same_payer here because confirmed_by has enough capacity
+    // unless a new reporter was added in between
+    reports_by_transfer.modify(report, eosio::same_payer, [&](auto &s) {
+      push_first_free(s.confirmed_by, reporter);
+      s.confirmed = count_non_empty(s.confirmed_by) >= _settings.threshold;
     });
   }
 }
@@ -246,10 +277,9 @@ ACTION reporteribc::execfailed(name reporter, uint64_t report_id) {
         "report already marked as failed by reporter");
 
   bool failed = false;
-  // push_back increases RAM, use reporter as RAM payer
-  _reports_table.modify(report, reporter, [&](auto &s) {
-    s.failed_by.push_back(reporter);
-    s.failed = failed = s.failed_by.size() >= _settings.threshold;
+  _reports_table.modify(report, eosio::same_payer, [&](auto &s) {
+    push_first_free(s.failed_by, reporter);
+    s.failed = failed = count_non_empty(s.failed_by) >= _settings.threshold;
   });
 
   // init a cross-chain refund transfer

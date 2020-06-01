@@ -18,15 +18,15 @@ export const getContractsForNetwork = (
   switch (network) {
     case `kylin`:
       return {
-        token: `ibc1eos1tok2`,
-        ibc: `ibc1eos1con2`,
+        token: `ibc1eos1tok3`,
+        ibc: `ibc1eos1con3`,
         cpuPayer: ``,
         ...((envConfig.kylin || {}) as any),
       };
     case `waxtest`:
       return {
-        token: `ibc1wax1tok2`,
-        ibc: `ibc1wax1con2`,
+        token: `ibc1wax1tok3`,
+        ibc: `ibc1wax1con3`,
         cpuPayer: ``,
         ...((envConfig.waxtest || {}) as any),
       };
