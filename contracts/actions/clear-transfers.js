@@ -15,7 +15,7 @@ async function action() {
     await sendTransaction([
       {
         account: IBC_CONTRACT,
-        name: `clear.rep`,
+        name: `clear.trans`,
         authorization: [
           {
             actor: IBC_CONTRACT,
@@ -23,7 +23,7 @@ async function action() {
           },
         ],
         data: {
-          ids: ["0"]
+          ids: ["1"]
         },
       },
     ]);

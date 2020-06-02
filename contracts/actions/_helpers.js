@@ -12,14 +12,14 @@ const getAccountNames = (envName = defaultEnvName) => {
 
   if(envName === `wax`) {
     [
-      TOKEN_CONTRACT,
       IBC_CONTRACT,
+      TOKEN_CONTRACT,
       REPORTER_1,
     ] = accounts;
   } else if(envName === `mainnet`) {
     [
-      TOKEN_CONTRACT,
       IBC_CONTRACT,
+      TOKEN_CONTRACT,
       REPORTER_1,
     ] = accounts;
   } else {

@@ -16,7 +16,7 @@ async function action() {
   const thisReporters =
     thisChain === `wax` ? WAXTEST_REPORTERS : KYLIN_REPORTERS;
 
-  for (const reporter of thisReporters) {
+  for (const reporter of thisReporters.slice(1)) {
     try {
       const tx = await sendTransaction([
         {
