@@ -3,7 +3,8 @@
 
 ACTION reporteribc::init(name current_chain_name, token_info token_info,
                          uint32_t expire_after_seconds, bool do_issue,
-                         uint8_t threshold, double fees_percentage, const asset& min_quantity) {
+                         uint8_t threshold, double fees_percentage,
+                         const asset &min_quantity) {
   require_auth(get_self());
 
   bool settings_exists = _settings_table.exists();
@@ -11,7 +12,8 @@ ACTION reporteribc::init(name current_chain_name, token_info token_info,
   check(!settings_exists, "settings already defined");
   check(threshold > 0, "threshold must be positive");
   check(min_quantity.amount >= 0, "min_quantity must be >= 0");
-  check(token_info.symbol == min_quantity.symbol, "token info symbol does not match min_quantity symbol");
+  check(token_info.symbol == min_quantity.symbol,
+        "token info symbol does not match min_quantity symbol");
 
   _settings_table.set(
       settings{
@@ -34,12 +36,15 @@ ACTION reporteribc::init(name current_chain_name, token_info token_info,
       get_self());
 }
 
-ACTION reporteribc::update(uint64_t threshold, double fees_percentage, uint32_t expire_after_seconds, const asset& min_quantity) {
+ACTION reporteribc::update(uint64_t threshold, double fees_percentage,
+                           uint32_t expire_after_seconds,
+                           const asset &min_quantity) {
   require_auth(get_self());
 
   check(threshold > 0, "minimum reporters must be positive");
   check(min_quantity.amount >= 0, "min_quantity must be >= 0");
-  check(_settings.token_info.symbol == min_quantity.symbol, "token info symbol does not match min_quantity symbol");
+  check(_settings.token_info.symbol == min_quantity.symbol,
+        "token info symbol does not match min_quantity symbol");
 
   _settings.threshold = threshold;
   _settings.expire_after = seconds(expire_after_seconds);
@@ -52,7 +57,8 @@ ACTION reporteribc::update(uint64_t threshold, double fees_percentage, uint32_t 
   // need to update all unconfirmed reports and check if they are now confirmed
   for (auto report = _reports_table.begin(); report != _reports_table.end();
        report++) {
-    if (!report->confirmed && count_non_empty(report->confirmed_by) >= threshold) {
+    if (!report->confirmed &&
+        count_non_empty(report->confirmed_by) >= threshold) {
       _reports_table.modify(report, eosio::same_payer,
                             [&](auto &s) { s.confirmed = true; });
     }
@@ -94,7 +100,8 @@ void reporteribc::clearexpired(uint64_t count) {
   auto current_count = 0;
   expired_reports_t expired_reports_table(get_self(), get_self().value);
   for (auto it = expired_reports_table.begin();
-       it != expired_reports_table.end() && current_count < count; current_count++, it++) {
+       it != expired_reports_table.end() && current_count < count;
+       current_count++, it++) {
     expired_reports_table.erase(it);
   }
 }
@@ -102,7 +109,7 @@ void reporteribc::clearexpired(uint64_t count) {
 void reporteribc::cleartransfers(std::vector<uint64_t> ids) {
   require_auth(get_self());
 
-  for (auto id: ids) {
+  for (auto id : ids) {
     auto it = _transfers_table.find(id);
     check(it != _transfers_table.end(), "some id does not exist");
     _transfers_table.erase(it);
@@ -114,7 +121,7 @@ void reporteribc::cleartransfers(std::vector<uint64_t> ids) {
 void reporteribc::clearreports(std::vector<uint64_t> ids) {
   require_auth(get_self());
 
-  for (auto id: ids) {
+  for (auto id : ids) {
     auto it = _reports_table.find(id);
     check(it != _reports_table.end(), "some id does not exist");
     _reports_table.erase(it);
@@ -122,6 +129,7 @@ void reporteribc::clearreports(std::vector<uint64_t> ids) {
 }
 
 ACTION reporteribc::issuefees() {
+  check_enabled();
   // can be called by anyone
 
   uint64_t total_points = 0;
@@ -150,7 +158,7 @@ ACTION reporteribc::issuefees() {
       s.points = 0;
     });
 
-    if(share_fees.amount > 0) {
+    if (share_fees.amount > 0) {
       token::transfer_action transfer_act(_settings.token_info.contract,
                                           {get_self(), name("active")});
       transfer_act.send(get_self(), reporter->account, share_fees, "fees");
@@ -165,15 +173,13 @@ ACTION reporteribc::issuefees() {
 }
 
 ACTION reporteribc::report(name reporter, const transfer_s &transfer) {
+  check_enabled();
   require_auth(reporter);
   check_reporter(reporter);
   reporter_worked(reporter);
   check(transfer.expires_at > current_time_point(), "transfer already expired");
   free_ram();
 
-  auto _settings = _settings_table.get();
-
-  check(_settings.enabled, "reporting is disabled");
   // we don't want report to fail, report anything at this point
   // it will fail at execute and then initiate a refund
   // check(is_account(transfer.to_account), "to account does not exist");
@@ -226,6 +232,7 @@ ACTION reporteribc::report(name reporter, const transfer_s &transfer) {
 }
 
 ACTION reporteribc::exec(name reporter, uint64_t report_id) {
+  check_enabled();
   require_auth(reporter);
   check_reporter(reporter);
   reporter_worked(reporter);
@@ -260,6 +267,7 @@ ACTION reporteribc::exec(name reporter, uint64_t report_id) {
 }
 
 ACTION reporteribc::execfailed(name reporter, uint64_t report_id) {
+  check_enabled();
   require_auth(reporter);
   check_reporter(reporter);
   reporter_worked(reporter);
@@ -303,11 +311,14 @@ ACTION reporteribc::execfailed(name reporter, uint64_t report_id) {
 }
 
 void reporteribc::on_transfer(name from, name to, asset quantity, string memo) {
+  check_enabled();
+
   if (from == get_self() || from == "eosio.ram"_n || from == "eosio.stake"_n ||
       from == "eosio.rex"_n)
     return;
 
-  if (get_first_receiver() != _settings.token_info.contract) return;
+  if (get_first_receiver() != _settings.token_info.contract)
+    return;
 
   check(to == get_self(), "contract not involved in transfer");
   check(quantity.symbol == _settings.token_info.symbol,
@@ -324,9 +335,9 @@ void reporteribc::on_transfer(name from, name to, asset quantity, string memo) {
 
   name to_blockchain_name = name(to_blockchain);
 
-  check(
-      to_blockchain_name == name("eos") || to_blockchain_name == name("wax"),
-      "invalid memo: target blockchain \"" + to_blockchain + "\" is not valid");
+  check(to_blockchain_name == name("eos") || to_blockchain_name == name("wax"),
+        "invalid memo: target blockchain \"" + to_blockchain +
+            "\" is not valid");
   check(_settings.current_chain_name != to_blockchain_name,
         "cannot send to the same chain");
   check(memo_object.to_account.size() > 0 && memo_object.to_account.size() < 13,
@@ -341,7 +352,7 @@ void reporteribc::register_transfer(const name &to_blockchain, const name &from,
                                     const name &to_account,
                                     const asset &quantity,
                                     bool is_refund = false) {
-  check(_settings.enabled, "ibc transfers are disabled");
+  check_enabled();
   const auto transfer_id = _settings.next_transfer_id;
   _settings.next_transfer_id += 1;
 
@@ -382,14 +393,16 @@ void reporteribc::free_ram() {
   auto count = 0;
   auto transfers_by_expiry = _transfers_table.get_index<name("byexpiry")>();
   for (auto it = transfers_by_expiry.lower_bound(0);
-       it != transfers_by_expiry.upper_bound(now) && count < 2; count++, it = transfers_by_expiry.lower_bound(0)) {
+       it != transfers_by_expiry.upper_bound(now) && count < 2;
+       count++, it = transfers_by_expiry.lower_bound(0)) {
     transfers_by_expiry.erase(it);
   }
 
   auto reports_by_expiry = _reports_table.get_index<name("byexpiry")>();
   count = 0;
   for (auto it = reports_by_expiry.lower_bound(0);
-       it != reports_by_expiry.upper_bound(now) && count < 2; count++, it = reports_by_expiry.lower_bound(0)) {
+       it != reports_by_expiry.upper_bound(now) && count < 2;
+       count++, it = reports_by_expiry.lower_bound(0)) {
     // track reports that were not executed and where no refund was initiated
     if (!it->executed && !it->failed) {
       expired_reports_t expired_reports_table(get_self(), get_self().value);

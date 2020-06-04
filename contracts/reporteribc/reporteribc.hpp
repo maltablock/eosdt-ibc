@@ -202,6 +202,11 @@ CONTRACT reporteribc : public contract {
           "the signer is not a known reporter");
   }
 
+  void check_enabled() {
+    auto _settings = _settings_table.get();
+    check(_settings.enabled, "reporting is disabled");
+  }
+
   name get_ibc_contract_for_chain(name chain_name) {
     switch (chain_name.value) {
       case name("eos").value: {
