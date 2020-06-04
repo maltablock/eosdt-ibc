@@ -19,7 +19,6 @@ const getAccountNames = (envName = defaultEnvName) => {
   } else if(envName === `mainnet`) {
     [
       IBC_CONTRACT,
-      TOKEN_CONTRACT,
       REPORTER_1,
     ] = accounts;
   } else {

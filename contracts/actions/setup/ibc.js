@@ -6,7 +6,7 @@ const envName = process.env.EOSIAC_ENV || `dev`;
 const { sendTransaction, env } = initEnvironment(envName, { verbose: true });
 
 const {
-  TOKEN_CONTRACT,
+  // TOKEN_CONTRACT,
   IBC_CONTRACT,
   REPORTER_1,
   REPORTER_2,
@@ -18,6 +18,7 @@ async function action() {
     const thisChain = envName.includes(`wax`) ? `wax` : `eos`;
     const otherChain = thisChain === `eos` ? `wax` : `eos`;
     const SYMBOL_CODE = thisChain === `wax` ? `WEOSDT` : `EOSDT`;
+    const TOKEN_CONTRACT = `eosdtsttoken`
 
     await sendTransaction([
       {
@@ -35,10 +36,10 @@ async function action() {
             symbol: `9,${SYMBOL_CODE}`,
             contract: TOKEN_CONTRACT,
           },
-          expire_after_seconds: 600, // 86400,
+          expire_after_seconds: 86400 * 7,
           do_issue: thisChain === `wax`,
-          threshold: 1,
-          fees_percentage: 0.1,
+          threshold: 2,
+          fees_percentage: 0.002,
           min_quantity: `1.000000000 ${SYMBOL_CODE}`,
         },
       },
@@ -52,26 +53,26 @@ async function action() {
           },
         ],
         data: {
-          enable: true,
+          enable: false,
         },
       },
     ]);
 
-    for (const reporter of [REPORTER_1, REPORTER_2]) {
-      await sendTransaction({
-        account: IBC_CONTRACT,
-        name: `addreporter`,
-        authorization: [
-          {
-            actor: IBC_CONTRACT,
-            permission: `active`,
-          },
-        ],
-        data: {
-          reporter: reporter,
-        },
-      });
-    }
+    // for (const reporter of [REPORTER_1, REPORTER_2]) {
+    //   await sendTransaction({
+    //     account: IBC_CONTRACT,
+    //     name: `addreporter`,
+    //     authorization: [
+    //       {
+    //         actor: IBC_CONTRACT,
+    //         permission: `active`,
+    //       },
+    //     ],
+    //     data: {
+    //       reporter: reporter,
+    //     },
+    //   });
+    // }
 
     process.exit(0);
   } catch (error) {

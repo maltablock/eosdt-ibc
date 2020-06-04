@@ -33,14 +33,14 @@ export const getContractsForNetwork = (
     case `eos`:
       return {
         token: `eosdtsttoken`,
-        ibc: `todo`,
-        cpuPayer: `mb.bank`,
+        ibc: `eosdttowaxxx`,
+        cpuPayer: ``,
         ...((envConfig.eos || {}) as any),
       };
     case `wax`:
       return {
-        token: `todo`,
-        ibc: `todo`,
+        token: `weosdttokens`,
+        ibc: `weosdttoeoss`,
         cpuPayer: ``,
         ...((envConfig.wax || {}) as any),
       };
