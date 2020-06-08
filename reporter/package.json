@@ -1,7 +1,7 @@
 {
   "name": "ibc-reporter",
   "description": "Watches all chains for transactions and inserts them into a database",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "author": "Christoph Michel",
   "engines": {
     "node": ">=10.0.0"
