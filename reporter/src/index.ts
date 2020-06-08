@@ -6,6 +6,7 @@ import { Routes } from "./routes";
 import { logger } from "./logger";
 import { NETWORKS_TO_WATCH } from "./utils";
 import Reporter from "./reporter";
+import { getRpc } from "./eos/networks";
 
 async function start() {
   const app = express();
@@ -46,6 +47,9 @@ async function start() {
   
   logger.info(
     `Reporter v${VERSION}: Express server has started on port ${PORT}. Open http://localhost:${PORT}/logs`
+  );
+  logger.info(
+    `Using endpoints ${NETWORKS_TO_WATCH.map(network => getRpc(network).endpoint).join(`, `)}`
   );
 
   const reporters = NETWORKS_TO_WATCH.map(
