@@ -32,10 +32,11 @@ WAX_IBC=maltareports;active;5JzSdC...
 ```
 
 #### Setup using Docker
+Build the image with below command and make note of container-id
+```$ docker build .```
+Run the docker cotainer with your updated env file. Refer this template env file https://github.com/maltablock/eosdt-ibc/blob/master/reporter/.template.env
 
-- [ ] Finish docker image and upload it.
-
-See the Docker image for a dockerized deployment.
+``` docker run  --rm -it -v ${PWD}/env-commands:/env-commands aravindgv/eosdt:1.0.5```
 
 #### Different CPU payer
 
