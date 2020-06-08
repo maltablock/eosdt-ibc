@@ -24,6 +24,7 @@ const rotateFileTransport = new (transports.DailyRotateFile)({
   datePattern: 'yyyy-MM-DD',
   utc: true,
   maxFiles: 14,
+  level: `silly`,
 });
 
 let logFilePath = ``;

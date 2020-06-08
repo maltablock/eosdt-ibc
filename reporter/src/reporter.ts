@@ -274,7 +274,7 @@ export default class Reporter {
       if (!this.transferIrreversibilityMap[tId]) {
         const txInfo = `${t.from_account}@${t.from_blockchain} == ${t.quantity} ==> ${t.to_account}@${t.to_blockchain}`;
         this.log(
-          `verbose`,
+          `info`,
           `Saw new transfer ${tId} at block ${this.currentHeadBlock}\n${txInfo}\nWaiting for irreversibility`
         );
         // saw at headblock, wait until this block becomes irreversible

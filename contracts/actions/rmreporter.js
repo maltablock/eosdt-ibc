@@ -9,23 +9,20 @@ const { api, sendTransaction, env } = initEnvironment(envName, {
 
 const { IBC_CONTRACT } = getAccountNames();
 
-const KYLIN_REPORTERS = [`alohaeostest`, `kylsphererpt`];
-const WAXTEST_REPORTERS = [`alohaeosprod`, `waxsphererpt`];
-const EOS_REPORTERS = [`maltablockbp`, `eosphereiobp`, `alohaeosprod`];
+const EOS_REPORTERS = [`maltablock.2`];
 const WAX_REPORTERS = [`maltablockbp`, `eosphereiobp`, `alohaeosprod`];
 
 async function action() {
   const thisChain = envName.includes(`wax`) ? `wax` : `eos`;
   // const thisReporters =
   //   thisChain === `wax` ? WAXTEST_REPORTERS : KYLIN_REPORTERS;
-  const thisReporters =
-    thisChain === `wax` ? WAX_REPORTERS : EOS_REPORTERS;
+  const thisReporters = thisChain === `wax` ? WAX_REPORTERS : EOS_REPORTERS;
 
   try {
     const tx = await sendTransaction([
       ...thisReporters.map(reporter => ({
         account: IBC_CONTRACT,
-        name: `addreporter`,
+        name: `rmreporter`,
         authorization: [
           {
             actor: IBC_CONTRACT,
