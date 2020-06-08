@@ -38,13 +38,14 @@ async function start() {
 
   // start express server
   const PORT = process.env.PORT || 8080;
+  const VERSION = process.env.npm_package_version
   app.set('views', __dirname + '/views');
   app.engine('html', require('ejs').renderFile);
   app.set('view engine', 'html');
   app.listen(PORT);
   
   logger.info(
-    `Express server has started on port ${PORT}. Open http://localhost:${PORT}/logs`
+    `Reporter v${VERSION}: Express server has started on port ${PORT}. Open http://localhost:${PORT}/logs`
   );
 
   const reporters = NETWORKS_TO_WATCH.map(
