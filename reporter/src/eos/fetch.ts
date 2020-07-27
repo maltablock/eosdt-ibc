@@ -113,9 +113,7 @@ export const fetchAllScopes = (network: NetworkName) => async (
   return rows.map((row) => row.scope);
 };
 
-export const fetchHeadBlockNumbers = (
-  network: NetworkName
-) => async () => {
+export const fetchHeadBlockNumbers = (network: NetworkName) => async () => {
   const rpc = getRpc(network);
   const response = await rpc.get_info();
   return {
@@ -137,7 +135,7 @@ export const sendTransaction = (network: NetworkName) => async (
   };
   const eosApi = getApi(network);
 
-  const config = getEnvConfig()[unmapNetworkName(network)]
+  const config = getEnvConfig()[unmapNetworkName(network)];
   if (config.cpuPayer) {
     _actions.unshift({
       account: config.cpuPayer,
@@ -152,10 +150,15 @@ export const sendTransaction = (network: NetworkName) => async (
     });
   }
 
-  return eosApi.transact(
-    {
-      actions: _actions,
-    },
-    txOptions
-  );
+  return Promise.race([
+    eosApi.transact(
+      {
+        actions: _actions,
+      },
+      txOptions
+    ),
+    new Promise((res, rej) =>
+      setTimeout(() => rej(new Error(`sendTransaction timed out`)), 10000)
+    ),
+  ]);
 };
