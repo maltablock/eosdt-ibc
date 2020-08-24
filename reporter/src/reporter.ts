@@ -19,7 +19,7 @@ import {
   pickRandom,
   sleep,
 } from "./utils";
-import { pulse } from "./utils/health";
+import { pulse, pulseError } from "./utils/health";
 
 export default class Reporter {
   network: NetworkName;
@@ -44,10 +44,13 @@ export default class Reporter {
 
     while (true) {
       try {
-        await Promise.all([
-          this.fetchTransfers(),
-          this.fetchXReports(),
-          this.fetchHeadBlockNumbers(),
+        await Promise.race([
+          Promise.all([
+            this.fetchTransfers(),
+            this.fetchXReports(),
+            this.fetchHeadBlockNumbers(),
+          ]),
+          sleep(10 * 1e3, `get_table_rows timed out`),
         ]);
 
         this.printState();
@@ -57,6 +60,7 @@ export default class Reporter {
         await this.executeReports();
       } catch (error) {
         this.log(`error`, extractRpcError(error));
+        pulseError(this.network, extractRpcError(error))
       } finally {
         await sleep(10000);
       }

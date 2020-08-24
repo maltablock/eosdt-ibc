@@ -1,8 +1,8 @@
 import { NetworkName } from "../types";
 import { RpcError } from "eosjs";
 
-export const sleep = (ms: number) =>
-  new Promise((resolve) => setTimeout(resolve, ms));
+export const sleep = (ms: number, shouldRejectWithMessage = ``) =>
+  new Promise((resolve, reject) => setTimeout(shouldRejectWithMessage ? () => reject(new Error(shouldRejectWithMessage)) : resolve, ms));
 
 export const isProduction = () => process.env.NODE_ENV === `production`;
 

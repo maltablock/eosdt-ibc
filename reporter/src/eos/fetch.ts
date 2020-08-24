@@ -5,7 +5,7 @@ import { getContractsForNetwork, getRpc } from "./networks";
 import { logger } from "../logger";
 import { TTransactionResult } from "./types";
 import { getEnvConfig } from "../dotenv";
-import { unmapNetworkName } from "../utils";
+import { unmapNetworkName, sleep } from "../utils";
 
 // https://github.com/EOSIO/eosjs-api/blob/master/docs/api.md#eos.getTableRows
 type GetTableRowsOptions = {
@@ -157,8 +157,6 @@ export const sendTransaction = (network: NetworkName) => async (
       },
       txOptions
     ),
-    new Promise((res, rej) =>
-      setTimeout(() => rej(new Error(`sendTransaction timed out`)), 10000)
-    ),
+    sleep(10000, `sendTransaction timed out`) as any
   ]);
 };
